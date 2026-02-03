@@ -1,0 +1,12 @@
+[project]
+name = "qwen3-tts-clone"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gradio>=6.5.1",
+    "qwen-tts>=0.0.5",
+    "soundfile>=0.13.1",
+    "torch>=2.10.0",
+]
