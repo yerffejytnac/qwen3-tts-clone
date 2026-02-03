@@ -31,11 +31,29 @@ Add or remove references by editing `ref_paths` list in `clone_voice.py`. Refere
 
 Generated audio samples:
 
-| File | Phrase |
-|------|--------|
-| [output_0.wav](output/output_0.wav) | I'm not the pheasant plucker, I'm the pheasant plucker's mate. I'm only plucking pheasants 'cause the pheasant plucker's running late |
-| [output_1.wav](output/output_1.wav) | Extremely accurate and stunningly beautiful bespoke printer profiles transform creative print making to an extraordinary extent. |
-| [output_2.wav](output/output_2.wav) | Generating code from AI prompts can lead to verbose code, or duplication of existing code instead of using an abstraction. But there are times when this is perfectly acceptable, such as when building proof of concepts, or when topics like program efficiency are unimportant. |
+#### [output_0](output/output_0.wav)
+
+> I'm not the pheasant plucker, I'm the pheasant plucker's mate. I'm only plucking pheasants 'cause the pheasant plucker's running late
+
+https://github.com/user-attachments/assets/7ebb3ecc-1b2e-452f-84d7-b2e6bd18cb43
+
+---
+
+#### [output_1](output/output_1.wav)
+
+> Extremely accurate and stunningly beautiful bespoke printer profiles transform creative print making to an extraordinary extent.
+
+https://github.com/user-attachments/assets/5b24e275-a482-4894-bab1-9276890a84ba
+
+---
+
+#### [output_2](output/output_2.wav)
+
+> Generating code from AI prompts can lead to verbose code, or duplication of existing code instead of using an abstraction. But there are times when this is perfectly acceptable, such as when building proof of concepts, or when topics like program efficiency are unimportant.
+
+https://github.com/user-attachments/assets/69ac9b34-913d-4dcc-849a-fd65b01e38f4
+
+---
 
 ## Realtime TTS
 
