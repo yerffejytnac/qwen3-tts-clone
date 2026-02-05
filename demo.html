@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS API Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.info {
+            background: #e3f2fd;
+            color: #0d47a1;
+            display: block;
+        }
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            display: block;
+        }
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            display: block;
+        }
+        audio {
+            width: 100%;
+            margin-top: 20px;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #555;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ TTS API Demo</h1>
+
+        <label for="text">Text to Synthesize:</label>
+        <textarea id="text" placeholder="Enter text here...">Hello, this is a test of the text-to-speech API.</textarea>
+
+        <label for="language">Language:</label>
+        <select id="language">
+            <option value="English">English</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Spanish">Spanish</option>
+        </select>
+
+        <div>
+            <button id="generateBtn" onclick="generateSpeech()">Generate Speech</button>
+            <button id="streamBtn" onclick="streamSpeech()">Stream Speech</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <audio id="audioPlayer" controls style="display: none;"></audio>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        function showStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        function setLoading(isLoading) {
+            document.getElementById('generateBtn').disabled = isLoading;
+            document.getElementById('streamBtn').disabled = isLoading;
+        }
+
+        async function generateSpeech() {
+            const text = document.getElementById('text').value.trim();
+            const language = document.getElementById('language').value;
+
+            if (!text) {
+                showStatus('Please enter some text', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('Generating speech...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        language: language,
+                        temperature: 0.9,
+                        top_p: 1.0,
+                        top_k: 50
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const audio = document.getElementById('audioPlayer');
+                audio.src = url;
+                audio.style.display = 'block';
+                audio.play();
+
+                showStatus('✓ Speech generated successfully!', 'success');
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Generation error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function streamSpeech() {
+            const text = document.getElementById('text').value.trim();
+            const language = document.getElementById('language').value;
+
+            if (!text) {
+                showStatus('Please enter some text', 'error');
+                return;
+            }
+
+            setLoading(true);
+            showStatus('Streaming speech...', 'info');
+
+            try {
+                const response = await fetch(`${API_URL}/tts/stream`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        language: language,
+                        temperature: 0.9,
+                        top_p: 1.0,
+                        top_k: 50
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Read the stream
+                const reader = response.body.getReader();
+                const chunks = [];
+                let receivedLength = 0;
+
+                while (true) {
+                    const {done, value} = await reader.read();
+
+                    if (done) break;
+
+                    chunks.push(value);
+                    receivedLength += value.length;
+
+                    // Update progress
+                    showStatus(`Streaming... ${(receivedLength / 1024).toFixed(1)} KB received`, 'info');
+                }
+
+                // Combine chunks into blob
+                const blob = new Blob(chunks, {type: 'audio/wav'});
+                const url = URL.createObjectURL(blob);
+
+                const audio = document.getElementById('audioPlayer');
+                audio.src = url;
+                audio.style.display = 'block';
+                audio.play();
+
+                showStatus('✓ Speech streamed successfully!', 'success');
+
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+                console.error('Streaming error:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Check API health on load
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                console.log('API Status:', data);
+            } catch (error) {
+                console.warn('Could not connect to API. Make sure the server is running.');
+                showStatus('⚠️ Server not running. Start with: uv run python api_server.py', 'error');
+            }
+        }
+
+        checkHealth();
+    </script>
+</body>
+</html>

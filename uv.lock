@@ -1541,18 +1541,24 @@ name = "qwen3-tts-clone"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "fastapi" },
     { name = "gradio" },
+    { name = "python-multipart" },
     { name = "qwen-tts" },
     { name = "soundfile" },
     { name = "torch" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "fastapi", specifier = ">=0.128.0" },
     { name = "gradio", specifier = ">=6.5.1" },
+    { name = "python-multipart", specifier = ">=0.0.22" },
     { name = "qwen-tts", specifier = ">=0.0.5" },
     { name = "soundfile", specifier = ">=0.13.1" },
     { name = "torch", specifier = ">=2.10.0" },
+    { name = "uvicorn", specifier = ">=0.40.0" },
 ]
 
 [[package]]
