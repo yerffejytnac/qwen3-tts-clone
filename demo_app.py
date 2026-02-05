@@ -11,11 +11,22 @@ import gradio as gr
 import numpy as np
 import torch
 from qwen_tts import Qwen3TTSModel
+from qwen_tts.core.device_utils import (
+    get_attention_implementation,
+    get_device_info,
+    get_optimal_device,
+    get_optimal_dtype,
+)
 
 
 class VoiceModelApp:
     def __init__(self) -> None:
-        self.device: str = "mps" if torch.backends.mps.is_available() else "cpu"
+        self.device: str = get_optimal_device()
+        # Use float32 for MPS due to numerical stability issues with bfloat16
+        self.dtype = (
+            torch.float32 if self.device == "mps" else get_optimal_dtype(self.device)
+        )
+        self.attn_implementation = get_attention_implementation(self.device)
         self.model_path: str = os.path.expanduser(
             "~/LLMs/Qwen3-TTS/Qwen3-TTS-12Hz-1.7B-Base"
         )
@@ -26,11 +37,22 @@ class VoiceModelApp:
         self.load_models()
 
     def load_models(self) -> None:
-        print(f"Loading TTS model on {self.device}...")
+        print(f"Device: {get_device_info(self.device)}")
+        print(f"Dtype: {self.dtype}")
+        print(f"Attention: {self.attn_implementation or 'default'}")
+        print(f"\nLoading TTS model on {self.device}...")
+
+        # Build model loading kwargs
+        model_kwargs = {
+            "device_map": self.device,
+            "dtype": self.dtype,
+        }
+        if self.attn_implementation:
+            model_kwargs["attn_implementation"] = self.attn_implementation
+
         self.tts = Qwen3TTSModel.from_pretrained(
             self.model_path,
-            device_map=self.device,
-            dtype=torch.float32,
+            **model_kwargs,
         )
         print("TTS model loaded")
 

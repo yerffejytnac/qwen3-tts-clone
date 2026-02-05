@@ -1518,8 +1518,8 @@ wheels = [
 
 [[package]]
 name = "qwen-tts"
-version = "0.0.5"
-source = { registry = "https://pypi.org/simple" }
+version = "0.0.4"
+source = { git = "https://github.com/QwenLM/Qwen3-TTS.git?rev=refs%2Fpull%2F124%2Fhead#db29e7999de98a0108cc47f02f05cc138ecf38e4" }
 dependencies = [
     { name = "accelerate" },
     { name = "einops" },
@@ -1530,10 +1530,6 @@ dependencies = [
     { name = "sox" },
     { name = "torchaudio" },
     { name = "transformers" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/89/a980e442819ca37b9caf5d8b9b5fc43ad63a33a7909a54218e732205d539/qwen_tts-0.0.5.tar.gz", hash = "sha256:7299bdc081dff8c7a5e5a1827a0225d960957e3349ac949d46018e6ca573db0d", size = 113866, upload-time = "2026-01-23T06:09:56.625Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/64/15/804f94d4cede62a9306de05d089a7ea9f8e4b7bb00fbad7d8d9937d788b6/qwen_tts-0.0.5-py3-none-any.whl", hash = "sha256:000db7a1ea9f582b5a2bc1af11358134bbf36876f3a270a905b7dbbb658731c8", size = 113320, upload-time = "2026-01-23T06:09:54.512Z" },
 ]
 
 [[package]]
@@ -1555,7 +1551,7 @@ requires-dist = [
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "gradio", specifier = ">=6.5.1" },
     { name = "python-multipart", specifier = ">=0.0.22" },
-    { name = "qwen-tts", specifier = ">=0.0.5" },
+    { name = "qwen-tts", git = "https://github.com/QwenLM/Qwen3-TTS.git?rev=refs%2Fpull%2F124%2Fhead" },
     { name = "soundfile", specifier = ">=0.13.1" },
     { name = "torch", specifier = ">=2.10.0" },
     { name = "uvicorn", specifier = ">=0.40.0" },

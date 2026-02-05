@@ -16,6 +16,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from qwen_tts import Qwen3TTSModel
+from qwen_tts.core.device_utils import (
+    get_attention_implementation,
+    get_device_info,
+    get_optimal_device,
+    get_optimal_dtype,
+)
 
 
 class TTSRequest(BaseModel):
@@ -34,14 +40,31 @@ class TTSRequest(BaseModel):
 
 class TTSServer:
     def __init__(self, model_path: str, voice_model_path: str):
-        self.device = "mps" if torch.backends.mps.is_available() else "cpu"
-        print(f"Initializing TTS server on {self.device}...")
+        self.device = get_optimal_device()
+        # Use float32 for MPS due to numerical stability issues with bfloat16
+        self.dtype = (
+            torch.float32 if self.device == "mps" else get_optimal_dtype(self.device)
+        )
+        self.attn_implementation = get_attention_implementation(self.device)
+
+        print(f"Device: {get_device_info(self.device)}")
+        print(f"Dtype: {self.dtype}")
+        print(f"Attention: {self.attn_implementation or 'default'}")
+        print(f"\nInitializing TTS server on {self.device}...")
 
         print(f"Loading TTS model: {model_path}")
+
+        # Build model loading kwargs
+        model_kwargs = {
+            "device_map": self.device,
+            "dtype": self.dtype,
+        }
+        if self.attn_implementation:
+            model_kwargs["attn_implementation"] = self.attn_implementation
+
         self.tts = Qwen3TTSModel.from_pretrained(
             model_path,
-            device_map=self.device,
-            dtype=torch.float32,
+            **model_kwargs,
         )
         print("✓ TTS model loaded")
 

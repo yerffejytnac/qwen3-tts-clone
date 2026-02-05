@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Upgraded to Qwen3-TTS PR #124 for Metal Performance Shaders (MPS) optimization on Apple Silicon
+- Migrated all scripts to use device_utils helpers for automatic device detection
+- Use float32 for MPS due to numerical stability issues (bfloat16 causes inf/nan errors)
+- Updated device synchronization to use device-agnostic helpers across all scripts
+- Improved logging to show device info, dtype, and attention implementation on startup
+- Updated pyproject.toml to use qwen-tts from PR #124 branch
+
+### Fixed
+- Fixed numerical stability issues with bfloat16 on MPS by using float32
+- Resolved RuntimeError with probability tensor containing inf/nan values
+
 ## [0.1.0] - 2026-02-03
 
 ### Added

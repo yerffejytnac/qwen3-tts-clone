@@ -10,6 +10,13 @@ import numpy as np
 import soundfile as sf
 import torch
 from qwen_tts import Qwen3TTSModel
+from qwen_tts.core.device_utils import (
+    device_synchronize,
+    get_attention_implementation,
+    get_device_info,
+    get_optimal_device,
+    get_optimal_dtype,
+)
 
 AudioLike = Union[str, np.ndarray, Tuple[np.ndarray, int]]
 
@@ -19,18 +26,30 @@ def ensure_dir(d: str):
 
 
 def main():
-    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    device = get_optimal_device()
+    # Use float32 for MPS due to numerical stability issues with bfloat16
+    dtype = torch.float32 if device == "mps" else get_optimal_dtype(device)
+    attn_implementation = get_attention_implementation(device)
+
     MODEL_PATH = os.path.expanduser("~/LLMs/Qwen3-TTS/Qwen3-TTS-12Hz-1.7B-Base")
     OUT_DIR = "output"
     ensure_dir(OUT_DIR)
 
-    print(f"Device: {device}")
-    print(f"Loading model: {MODEL_PATH}")
+    print(f"Device: {get_device_info(device)}")
+    print(f"Dtype: {dtype}")
+    print(f"Attention: {attn_implementation or 'default'}")
+    print(f"\nLoading model: {MODEL_PATH}")
+
+    model_kwargs = {
+        "device_map": device,
+        "dtype": dtype,
+    }
+    if attn_implementation:
+        model_kwargs["attn_implementation"] = attn_implementation
 
     tts = Qwen3TTSModel.from_pretrained(
         MODEL_PATH,
-        device_map=device,
-        dtype=torch.float32,
+        **model_kwargs,
     )
 
     print("Model loaded\n")
@@ -107,7 +126,7 @@ def main():
 
     print(f"Generating {len(syn_texts)} audio files...\n")
 
-    torch.mps.synchronize() if device == "mps" else None
+    device_synchronize(device)
     t0 = time.time()
 
     wavs, sr = tts.generate_voice_clone(
@@ -119,7 +138,7 @@ def main():
         **common_gen_kwargs,
     )
 
-    torch.mps.synchronize() if device == "mps" else None
+    device_synchronize(device)
     t1 = time.time()
 
     print(f"\nGeneration complete: {t1 - t0:.2f}s")
