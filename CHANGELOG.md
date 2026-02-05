@@ -14,10 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated device synchronization to use device-agnostic helpers across all scripts
 - Improved logging to show device info, dtype, and attention implementation on startup
 - Updated pyproject.toml to use qwen-tts from PR #124 branch
+- Added request parameter logging to demo_app.py for debugging
 
 ### Fixed
 - Fixed numerical stability issues with bfloat16 on MPS by using float32
 - Resolved RuntimeError with probability tensor containing inf/nan values
+- Fixed Gradio audio format conversion warning by explicitly converting float32 to int16
 
 ## [0.1.0] - 2026-02-03
 

@@ -93,8 +93,19 @@ class VoiceModelApp:
                 "subtalker_top_k": int(subtalker_top_k),
                 "subtalker_top_p": float(subtalker_top_p),
                 "subtalker_temperature": float(subtalker_temperature),
-                "non_streaming_mode": False,
             }
+
+            # Log the request parameters
+            print("\n" + "=" * 60)
+            print("GENERATION REQUEST")
+            print("=" * 60)
+            print(f"Text: {text[:100]}{'...' if len(text) > 100 else ''}")
+            print(f"Language: {language}")
+            print(f"X-vector only: {x_vector_only}")
+            print("\nGeneration kwargs:")
+            for key, value in gen_kwargs.items():
+                print(f"  {key}: {value}")
+            print("=" * 60 + "\n")
 
             wavs, sr = self.tts.generate_voice_clone(
                 text=text,
@@ -104,8 +115,15 @@ class VoiceModelApp:
                 **gen_kwargs,
             )
 
-            # Convert to format Gradio expects
-            audio_data = (sr, wavs[0])
+            # Convert to int16 format to prevent Gradio warnings
+            audio_array = wavs[0]
+            if audio_array.dtype == np.float32 or audio_array.dtype == np.float64:
+                # Normalize to [-1, 1] range if needed
+                audio_array = np.clip(audio_array, -1.0, 1.0)
+                # Convert to int16
+                audio_array = (audio_array * 32767).astype(np.int16)
+
+            audio_data = (sr, audio_array)
             return audio_data, "✓ Generated successfully"
 
         except Exception as e:
